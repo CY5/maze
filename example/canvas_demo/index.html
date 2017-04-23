@@ -1,0 +1,52 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<style type="text/css">
+			canvas{
+				width: 100%;
+				height: 80%;
+
+				background: #101844;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		<script type="text/javascript" src="js/polyfill.js"></script>
+		<script type="text/javascript" src="js/common.js"></script>
+		<script type="text/javascript" src="js/algorithms.js"></script>
+		<script type="text/javascript" src="js/shapes.js"></script>
+		<script type="text/javascript" src="js/solver.js"></script>
+		<script type="text/javascript">
+			var maxRows =20;
+			var maxCols = 20;
+			var nodes = 4;
+			var fps = 25;
+			var canvas = document.getElementById('canvas');
+			var ctx = canvas.getContext("2d");
+			resize(ctx);
+
+
+			var algo = Algorithms(maxRows, maxCols, 'dfs', 'square');
+			var mat = algo.run();
+
+			var p = new Points (mat, maxRows, maxCols, nodes, ctx);
+			var vert = p.drawBoard();
+
+			var sol = Solver (maxRows, maxCols, "tremaux", 'square', mat);
+			var start = getRandomInt(0,2);
+        	var end = getRandomInt(18,maxRows - 1);
+        	var path = sol.run(start, end);
+        	path.push(end);
+        	console.log(path);
+			var v = new Vehicle(ctx, path.shift(), end, vert);
+        	v.run(path);
+
+			function render(cb){
+		        setTimeout(function(){
+		            requestAnimationFrame(cb);
+		        }, 1000 / fps);
+		    }
+		</script>
+	</body>
+</html>
