@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+    html,
+    body {
+        margin: 0;
+    }
+    
+    canvas {
+        background: "white";
+        width: 100%;
+    }
+    
+    input,
+    select {
+        font-size: 1em;
+        padding: 5px;
+    }
+    
+    .flexCol {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .flexRow {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+    }
+    
+    .flexCol .can {
+        flex: 1 0 50%;
+    }
+    
+    .flexCol > div {
+        flex: 1 0 39%;
+    }
+    
+    .controls {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        align-content: flex-start;
+    }
+    
+    .controls > div {
+        align-self: baseline;
+        flex: 1 0 100%;
+    }
+    
+    #time {
+        flex: 1 0 100% !important;
+        font-style: italic;
+    }
+    .band{
+        padding: 5px;
+        margin-right: 10px;
+    }
+    #dg{
+        visibility: hidden;
+    }
+    .demoG{
+        display: flex;
+        align-items: flex-end;
+        font-size: 1.2em
+    }
+    #tremaux .band{
+        background: rgba(255,193,7,1);
+    }
+    #iterativeSearch .band{
+        background: rgba(233,30,99,1);
+    }
+    #astar .band{
+        background: rgba(63,81,181,1);
+    }
+    @media only screen and (max-width: 768px) {
+        .flexCol .can {
+            flex: 1 0 100%;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <h2 style="text-align: center;">Maze Generator and Solver</h2>
+    <div class="flexCol">
+
+        <div class="can">
+            <canvas id="maze"></canvas>
+            <div id="dg" class="flexRow">
+                <div id="tremaux" class="demoG">
+                    <div class="band">
+                        <div>Tremaux</div>
+                    </div>
+                    <div id="tre"></div>
+                </div>
+                <div id="iterativeSearch" class="demoG">
+                    <div class="band">
+                        <div>Iterative Search</div>
+                    </div>
+                    <div id="its"></div>
+                </div>
+                <div id="astar" class="demoG">
+                    <div class="band">
+                        <div>A*</div>
+                    </div>
+                    <div id="ast"></div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+
+            <div class="flexRow" id="timeGen"></div>
+            <div class="flexCol">
+                <div class="flexRow">
+                    <label for="row">Row</label>
+                    <input id="row" type="number" min="0" max="100" />
+                </div>
+                <div class="flexRow">
+                    <label for="col">Column</label>
+                    <input id="col" type="number" min="0" max="100" />
+                </div>
+                <div class="flexRow">
+                    <label for="shpName">Shape</label>
+                    <select id="shpName">
+                        <option value="square">Square</option>
+                        <option value="hexagon">Hexagon</option>
+                    </select>
+                </div>
+                <div class="flexRow">
+                    <label for="algoName">Maze Generation Algorithm</label>
+                    <select id="algoName">
+                        <option value="kruskal">Kruskal</option>
+                        <option value="dfs">DFS</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flexRow">
+                <button id="play" onclick="generateMaze()">Generate Maze</button>
+            </div>
+            <div class="flexRow" id="timeSolve"></div>
+            <div class="flexCol">
+                <div class="flexRow">
+                    <label for="solvName">Maze Solver Algorithm</label>
+                    <select id="solvName" onchange="action(this)">
+                        <option value="tremaux">Tremaux</option>
+                        <option value="iterativeSearch">Iterative Search</option>
+                        <option value="astar">A* Search</option>
+                        <option value="all">All with No Obstacle</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flexRow">
+                <button id="solve" onclick="solveMaze()">Solve Maze</button>
+            </div>
+        </div>
+        <div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/common.js"></script>
+    <script type="text/javascript" src="js/algorithms.js"></script>
+    <script type="text/javascript" src="js/solver.js"></script>
+    <script type="text/javascript" src="js/shapes.js"></script>
+    <script>
+    //arr[val node position] = getDirection
+    var canvas = null,
+        ctx = null;
+    var fps = 25;
+    var maxRow = 10,
+        maxCols = 10;
+    var matrix;
+    var grid;
+    var style = {
+        "fill": "white",
+        "stroke": "#FF6977",
+        "erase": "white",
+        "lineWidth": 2
+    };
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        initCanvas();
+
+        //matrix = initAlgo(maxRow, maxCols, "kruskal","square");
+        initShape([], maxRow, maxCols, ctx, "square", style);
+    });
+    window.addEventListener("optimizedResize", function() {
+        console.log("Resized");
+        initCanvas();
+        grid.run();
+    });
+
+    function action(ele){
+        var solveAction = ele.value;
+        var time = document.getElementById("timeGen");
+        var row = document.getElementById("row");
+        var col = document.getElementById("col");
+        var shpName = document.getElementById("shpName");
+        var algoName = document.getElementById("algoName");
+        var solvName = document.getElementById("solvName");
+        var play = document.getElementById("play");
+        var solve = document.getElementById("solve");
+
+        var treB = document.getElementById("tre");
+        var itsB = document.getElementById("its");
+        var astB = document.getElementById("ast");
+        var demoGraph = document.getElementById("dg");
+
+        var arr = [row, col, shpName, algoName, play, solve];
+        if( solveAction === "all"){
+            demoGraph.style.visibility = "visible";
+            let row = 5, col= 10, algoName = "dfs", shpName="square";
+            var start = getRandomInt(0, row);
+            var end = getRandomInt(0, row*col - 1);
+            disabled (arr, true);
+            matrix = Array_1D(0, row * col * 4);
+            var style1 = {
+                "fill": "white",
+                "stroke": "#FF6977",
+                "erase": "#FF6977",
+                "lineWidth": 2
+            };
+            initShape(matrix, row, col, ctx, shpName, style1);
+            var tremaux = _solve(row, col, "tremaux", shpName, matrix);
+            var path1 = tremaux.run(start, end); 
+            path1.push(end);
+            var trail = "rgba(255, 255, 255, 0.5)";
+            var color = "rgba(255,193,7,0.5)";
+            var v1 = new Vehicle(ctx, path1.shift(), end, grid.getGrid(),color, trail);
+            var iterativeSearch = _solve(row, col, "iterativeSearch", shpName, matrix);
+            var path2 = iterativeSearch.run(start, end); 
+            path2.push(end);
+            var v2 = new Vehicle(ctx, path2.shift(), end, grid.getGrid(), "rgba(233,30,99,0.5)", trail);
+            var astar = _solve(row, col, "astar", shpName, matrix);
+            var path3 = astar.run(start, end); 
+            path3.push(end);
+            var v3 = new Vehicle(ctx, path3.shift(), end, grid.getGrid(), "rgba(63,81,181,0.5)", trail);
+
+            var t = Promise.resolve();
+            t.then(function (){
+                treB.innerHTML = path1.length;
+                return v1.run(path1);  
+            }).then(function(){
+                return setTimeout(function(){
+                        itsB.innerHTML = path2.length-1;
+                        v2.run(path2);
+                        },2000);  
+            }).then(function(){
+                return setTimeout(function(){
+                        astB.innerHTML = path3.length;
+                        v3.run(path3);
+                        },4000);  
+            });
+
+            // v2.run(path2);
+            // v3.run(path3);
+           
+        } else{
+            demoGraph.style.visibility = "hidden";
+            disabled (arr, false);
+        }
+    }
+
+    function seqFunc (tsk) {
+
+       
+            
+    }
+
+    function disabled (arr, flag) {
+        arr.forEach(function(ele){
+            ele.disabled = flag;
+        })
+    }
+
+    function generateMaze() {
+        var time = document.getElementById("timeGen");
+        var row = document.getElementById("row").value;
+        var col = document.getElementById("col").value;
+        var shpName = document.getElementById("shpName").value;
+        var algoName = document.getElementById("algoName").value;
+        var algo = initAlgo(row, col, algoName, shpName, time);
+        matrix = algo.run();
+        //matrix = Array_1D(0, row * col * 4);
+        initShape(matrix, row, col, ctx, shpName, style);
+        time.textContent = "time to Solve :" + algo.checkExceutionTime() + "ms";
+    }
+
+    function initAlgo(maxRow, maxCols, algorithm, shapeName) {
+        return Algorithms(maxRow, maxCols, algorithm, shapeName);
+    }
+
+    function initShape(matrix, maxRow, maxCols, ctx, shapeName, style) {
+        grid = Grid(matrix, maxRow, maxCols, ctx, shapeName, style);
+        grid.run();
+    }
+
+    function solveMaze() {
+        var time = document.getElementById("timeSolve");
+        var row = document.getElementById("row").value;
+        var col = document.getElementById("col").value;
+        var shpName = document.getElementById("shpName").value;
+        var solveAlgo = document.getElementById("solvName").value;
+        var sa = _solve (row, col, solveAlgo, shpName, matrix);
+        var sa1 = _solve (row, col, "astar", shpName, matrix);
+        var start = getRandomInt(0, row);
+        var end = getRandomInt(0, row*col - 1);
+        console.log(start, end);
+        var path = sa.run(start, end);
+        path.push(end);
+        var path1 = sa1.run(start, end);
+        path1.push(end);
+        //Animate
+        var trail = "rgba(255, 255, 255, 0.9)";
+        var color = "rgba(0, 150, 136,1)";
+        var v = new Vehicle(ctx, path.shift(), end, grid.getGrid(), color, trail);
+        v.run(path);
+        time.textContent = "time to Solve :" + sa.checkExceutionTime() + "ms";
+    }
+
+    function _solve(maxRows, maxCol, algorithm, shapeType, matrix) {
+        return new Solver (maxRows, maxCol, algorithm, shapeType, matrix);
+    }
+
+    function initCanvas() {
+        canvas = document.getElementById('maze');
+        if (canvas.getContext) {
+            ctx = canvas.getContext("2d");
+            resize(ctx);
+        } else {
+            throw ("Canvas Not Supported");
+        }
+    }
+
+    var Grid = (function(matrix, rows, cols, ctx, shapeName, style) {
+        var maxRows = rows,
+            maxCols = cols;
+        var s;
+        var shp = {
+            hexagon: function() {
+                return new Hexagon(matrix, maxRows, maxCols, ctx, style);
+               
+            },
+            square: function() {
+                return new Square(matrix, maxRows, maxCols, ctx, style);
+            }
+        }
+        return {
+            run: function() {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                s = shp[shapeName]();
+                s.drawBoard();
+            },
+            getGrid: function () {
+                return s.getGrid();
+            }
+        }
+    });
+
+    function render(cb){
+        setTimeout(function(){
+            requestAnimationFrame(cb);
+        }, 1000 / fps);
+    }
+    </script>
+</body>
+
+</html>
