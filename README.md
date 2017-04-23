@@ -1,4 +1,4 @@
-#Maze Api
+# Maze Api
 Maze Api can be used to Generate Maze and Solve maze
 **Algorithm used to Generate Maze**
 - Depth First Search
@@ -15,9 +15,9 @@ check out
 - [3d Particle Demo] (http://particlemaze.surge.sh/index.html)
 
 
-#Setup
+# Setup
 
-##To Generate Maze
+## To Generate Maze
 Algorithms is used to generate Random Maze from Grid/hexagon
 algorithm are
 - kruskal
@@ -42,7 +42,7 @@ var grid = Grid(matrix, maxRow, maxCols, ctx, shapeName, style);
 grid.run();
 ```
 
-##To Solve Maze
+## To Solve Maze
 The Matrix Generate Above is used by Solver to Solve Maze
 Algorithm are:
 - tremaux
