@@ -60,6 +60,6 @@ path.push(end);
 ## Author
 Karan B Pathak
 
-##License
+## License
 
 Licensed under [MIT](https://opensource.org/licenses/mit-license.php). Enjoy
