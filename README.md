@@ -10,9 +10,9 @@ Maze Api can be used to Generate Maze and Solve maze
 - A*
 
 check out 
-- [2D Demo] (http://mazecy5.surge.sh)
-- [Canvas Demo] (http://mazecy5.surge.sh/example/canvas_demo/)
-- [3d Particle Demo] (http://particlemaze.surge.sh/index.html)
+- [2D Demo](http://mazecy5.surge.sh)
+- [Canvas Demo](http://mazecy5.surge.sh/example/canvas_demo/)
+- [3d Particle Demo](http://particlemaze.surge.sh/index.html)
 
 
 # Setup
