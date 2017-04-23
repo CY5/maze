@@ -43,7 +43,7 @@ grid.run();
 ```
 
 ## To Solve Maze
-The Matrix Generate Above is used by Solver to Solve Maze
+The Matrix Generate Above Matrix is used by Solver to Solve Maze
 Algorithm are:
 - tremaux
 - iterativeSearch
@@ -56,3 +56,10 @@ var end = getRandomInt(0, row*col - 1);
 var path = sa.run(start, end);
 path.push(end);
 ```
+
+## Author
+Karan B Pathak
+
+##License
+
+Licensed under [MIT](https://opensource.org/licenses/mit-license.php). Enjoy
